@@ -1,0 +1,372 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Comunidad | Blizkomap</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="js/blizko.js"></script>
+<script src="js/supabase-db.js"></script>
+<style id="shared"></style>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="headerMount"></div>
+
+<div class="foro-layout">
+
+  <div class="foro-hero">
+    <div>
+      <h1>Comunidad Blizkomap</h1>
+      <p>Pregunta lo que necesitas saber sobre vivir cerca del CUI. Cualquier estudiante puede responder.</p>
+    </div>
+    <div class="foro-stats">
+      <div>
+        <div class="foro-stat-num" id="statQ">0</div>
+        <div class="foro-stat-label">Preguntas</div>
+      </div>
+      <div>
+        <div class="foro-stat-num" id="statA">0</div>
+        <div class="foro-stat-label">Respuestas</div>
+      </div>
+    </div>
+  </div>
+  <div id="newQBox"></div>
+
+  <div class="filters">
+    <button class="filter-btn active" onclick="setFilter('all',this)">Todas</button>
+    <button class="filter-btn" onclick="setFilter('noAnswer',this)">Sin respuesta</button>
+    <button class="filter-btn" onclick="setFilter('mine',this)">Las mías</button>
+    <input class="search-q" type="text" placeholder="Buscar pregunta…" oninput="searchQuestions(this.value)">
+  </div>
+
+  
+  <div class="q-list" id="qList"></div>
+  <div id="emptyState" style="display:none" class="empty-forum">
+    <p>Sin preguntas aquí todavía</p>
+    <span>¡Sé el primero en preguntar algo!</span>
+  </div>
+</div>
+<footer>
+  <div class="footer-grid">
+    <div class="footer-brand">
+    <div class="logo-mark"><img src="media/BLIZCO LOGO BLANCO.avif"></div>
+      <p>La guía de estudiantes para estudiantes cerca de la Universidad CUI de Ixtlahuaca. Hecha con cariño por el grupo 801 de Diseño Gráfico.</p>
+      <div class="social-links">
+        <a href="https://www.instagram.com/somos_blizko/" target="_blank" class="social-link" aria-label="Instagram">
+          <svg viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+        </a>
+        <a href="#" target="_blank" class="social-link" aria-label="Facebook">
+          <svg viewBox="0 0 24 24"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        </a>
+        <a href="#" target="_blank" class="social-link" aria-label="TikTok">
+          <svg viewBox="0 0 24 24"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="footer-col">
+      <h4>Explorar</h4>
+      <ul>
+        <li><a href="#places">Comida</a></li>
+        <li><a href="#places">Tiendas</a></li>
+        <li><a href="#apartments">Departamentos</a></li>
+        <li><a href="#about">Quiénes somos</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Universidad</h4>
+      <ul>
+        <li><a href="#">CUI Ixtlahuaca</a></li>
+        <li><a href="#">Diseño Gráfico</a></li>
+        <li><a href="#">Grupo 801</a></li>
+      </ul>
+    </div>
+
+    <div class="footer-col">
+      <h4>Contacto</h4>
+      <ul>
+        <li><a href="https://www.instagram.com/somos_blizko/" target="_blank">@somos_blizko</a></li>
+        <li><a href="#">Sugerir lugar</a></li>
+        <li><a href="#">Reportar error</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer-bottom">
+    <p>© 2026 by <a href="https://edrddddd.online/" target="_blank">edrddddd</a> for Blizkomap</p>
+    <div class="logo-mark"><img src="media/preguntablizco.avif"></div>
+  </div>
+</footer>
+<script>
+  document.getElementById('shared').textContent = SHARED_CSS;
+  document.getElementById('headerMount').innerHTML = renderHeader('foro');
+
+  const session = DB.getSession();
+  let currentFilter = 'all';
+  let currentSearch = '';
+
+
+  function qAuthor(q)  { return q.users  || {}; }
+  function aAuthor(a)  { return a.users  || {}; }
+
+  function avatarEl(name, color, avatar, size = 38) {
+    const safeColor = color || '#7A786F';
+    const safeName  = name  || '?';
+    if (avatar) return `<img src="${avatar}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover" alt="${safeName}">`;
+    return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${safeColor};display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*.35)}px;font-weight:700;color:#fff;flex-shrink:0">${initials(safeName)}</div>`;
+  }
+
+  function escapeHTML(str) {
+    return (str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+  }
+
+  function fmtDate(iso) {
+
+    return timeAgo(new Date(iso).getTime());
+  }
+
+
+  function renderNewQBox() {
+    const box = document.getElementById('newQBox');
+    if (!session) {
+      box.innerHTML = `
+        <div class="guest-nudge">
+          <p>¿Tienes una pregunta? <span>Inicia sesión para participar en la comunidad.</span></p>
+          <div class="guest-actions">
+            <a href="login.html" class="btn btn-ghost btn-sm">Iniciar sesión</a>
+            <a href="registro.html" class="btn btn-primary btn-sm">Crear cuenta</a>
+          </div>
+        </div>`;
+      return;
+    }
+
+    const av = session.avatar
+      ? `<img src="${session.avatar}" style="width:36px;height:36px;border-radius:50%;object-fit:cover">`
+      : `<div class="new-q-avatar" style="background:${session.avatarColor||session.avatar_color}">${initials(session.name)}</div>`;
+
+    box.innerHTML = `
+      <div class="new-q-card">
+        <div class="new-q-header">
+          ${av}
+          <span>¿Qué quieres saber, ${session.name.split(' ')[0]}?</span>
+        </div>
+        <div id="newQAlert"></div>
+        <textarea id="newQText" class="reply-input" style="width:100%;min-height:80px"
+          placeholder="Ej. ¿Cuánto cobran los deptos cerca del CUI? ¿Hay lavandería por la zona?..."
+          oninput="updateCharCount(this)" maxlength="500"></textarea>
+        <div class="new-q-actions">
+          <button id="publishBtn" class="btn btn-primary btn-sm" onclick="submitQuestion()">Publicar pregunta</button>
+          <span class="char-count" id="charCount">0 / 500</span>
+        </div>
+      </div>`;
+  }
+
+  function updateCharCount(ta) {
+    document.getElementById('charCount').textContent = `${ta.value.length} / 500`;
+  }
+
+  async function submitQuestion() {
+    if (!session) return;
+    const text = document.getElementById('newQText').value.trim();
+    if (!text) {
+      document.getElementById('newQAlert').innerHTML =
+        '<div class="alert alert-error" style="margin-bottom:.75rem">Escribe tu pregunta primero.</div>';
+      return;
+    }
+
+    const btn = document.getElementById('publishBtn');
+    if (btn) { btn.disabled = true; btn.textContent = 'Publicando…'; }
+
+    try {
+      await DB.addQuestion({ userId: session.id, text });
+      document.getElementById('newQText').value = '';
+      document.getElementById('charCount').textContent = '0 / 500';
+      document.getElementById('newQAlert').innerHTML = '';
+      await renderList();
+      await updateStats();
+    } catch(e) {
+      document.getElementById('newQAlert').innerHTML =
+        `<div class="alert alert-error" style="margin-bottom:.75rem">Error al publicar: ${e.message}</div>`;
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Publicar pregunta'; }
+    }
+  }
+
+  
+  function setFilter(f, btn) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderList();
+  }
+
+  function searchQuestions(val) {
+    currentSearch = val.toLowerCase().trim();
+    renderList();
+  }
+
+
+  async function getFiltered() {
+    let qs = await DB.getQuestions();
+    if (currentFilter === 'noAnswer') qs = qs.filter(q => !q.answers || q.answers.length === 0);
+    if (currentFilter === 'mine')     qs = qs.filter(q => session && q.user_id === session.id);
+    if (currentSearch)                qs = qs.filter(q => q.text.toLowerCase().includes(currentSearch));
+    return qs;
+  }
+
+  async function renderList() {
+    const qs = await getFiltered();
+    const list  = document.getElementById('qList');
+    const empty = document.getElementById('emptyState');
+    if (!qs.length) { list.innerHTML = ''; empty.style.display = 'block'; return; }
+    empty.style.display = 'none';
+    list.innerHTML = qs.map(q => buildQCard(q)).join('');
+  }
+
+
+  function buildQCard(q) {
+    const author     = qAuthor(q);                      
+    const name       = author.name       || 'Usuario';
+    const color      = author.avatar_color || '#7A786F';
+    const avatar     = author.avatar     || null;
+    const answers    = q.answers         || [];
+    const hasAnswers = answers.length > 0;
+    const replyBoxId = `replyBox_${q.id}`;
+    const answersId  = `answers_${q.id}`;
+    const toggleId   = `toggle_${q.id}`;
+
+    const answersHTML = answers.map(a => buildAnswer(q.id, a)).join('');
+
+    const replyBox = session
+      ? `<div class="reply-box">
+           ${avatarEl(session.name, session.avatarColor || session.avatar_color, session.avatar, 30)}
+           <textarea class="reply-input" id="${replyBoxId}"
+             placeholder="Escribe tu respuesta…" rows="1"
+             onkeydown="submitOnEnter(event,'${q.id}')"></textarea>
+           <button class="btn btn-primary btn-sm" style="flex-shrink:0" onclick="submitAnswer('${q.id}')">Enviar</button>
+         </div>`
+      : `<div style="padding:.75rem 1.5rem;font-size:13px;color:var(--gray-500)">
+           <a href="login.html" style="color:var(--orange);font-weight:600">Inicia sesión</a> para responder
+         </div>`;
+
+    return `
+    <div class="q-card" id="qcard_${q.id}">
+      <div class="q-main">
+        <div class="q-header">
+          ${avatarEl(name, color, avatar)}
+          <div class="q-meta">
+            <div class="q-author">${escapeHTML(name)}</div>
+            <div class="q-time">${fmtDate(q.created_at)}</div>
+          </div>
+        </div>
+        <div class="q-text">${escapeHTML(q.text)}</div>
+        <div class="q-footer">
+          <button class="q-action" onclick="focusReply('${q.id}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Responder
+          </button>
+          ${hasAnswers ? `
+          <div class="answer-count">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            ${answers.length} respuesta${answers.length !== 1 ? 's' : ''}
+          </div>` : ''}
+        </div>
+      </div>
+
+      ${hasAnswers ? `
+      <button class="toggle-answers" id="${toggleId}" onclick="toggleAnswers('${q.id}', ${answers.length})">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg>
+        Ver ${answers.length} respuesta${answers.length !== 1 ? 's' : ''}
+      </button>
+      <div class="answers-section" id="${answersId}" style="display:none">
+        <div class="answers-inner">${answersHTML}</div>
+        ${replyBox}
+      </div>` : replyBox}
+    </div>`;
+  }
+
+  function buildAnswer(qId, a) {
+    const author = aAuthor(a);                         
+    const name   = author.name        || 'Usuario';
+    const color  = author.avatar_color || '#7A786F';
+    const avatar = author.avatar      || null;
+
+    return `
+    <div class="answer-item">
+      ${avatarEl(name, color, avatar, 32)}
+      <div class="a-bubble">
+        <div class="a-meta"><strong>${escapeHTML(name)}</strong> · ${fmtDate(a.created_at)}</div>
+        <div class="a-text">${escapeHTML(a.text)}</div>
+      </div>
+    </div>`;
+  }
+
+
+  function toggleAnswers(qId, count) {
+    const section = document.getElementById(`answers_${qId}`);
+    const btn     = document.getElementById(`toggle_${qId}`);
+    const isOpen  = section.style.display !== 'none';
+    section.style.display = isOpen ? 'none' : 'block';
+    btn.classList.toggle('open', !isOpen);
+    const label = isOpen ? 'Ver' : 'Ocultar';
+    btn.childNodes[btn.childNodes.length - 1].textContent =
+      ` ${label} ${count} respuesta${count !== 1 ? 's' : ''}`;
+  }
+
+  function focusReply(qId) {
+    const section = document.getElementById(`answers_${qId}`);
+
+    if (section && section.style.display === 'none') {
+      const btn = document.getElementById(`toggle_${qId}`);
+      const countMatch = btn ? btn.textContent.match(/\d+/) : null;
+      toggleAnswers(qId, countMatch ? parseInt(countMatch[0]) : 0);
+    }
+    const ta = document.getElementById(`replyBox_${qId}`);
+    if (ta) { ta.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => ta.focus(), 300); }
+  }
+
+  async function submitAnswer(qId) {
+    if (!session) { location.href = 'login.html'; return; }
+    const ta = document.getElementById(`replyBox_${qId}`);
+    if (!ta) return;
+    const text = ta.value.trim();
+    if (!text) return;
+
+    const btn = ta.nextElementSibling;
+    if (btn) { btn.disabled = true; btn.textContent = 'Enviando…'; }
+
+    try {
+      await DB.addAnswer(qId, { userId: session.id, text });
+      await renderList();
+      await updateStats();
+
+      const section = document.getElementById(`answers_${qId}`);
+      if (section) section.style.display = 'block';
+      const toggleBtn = document.getElementById(`toggle_${qId}`);
+      if (toggleBtn) toggleBtn.classList.add('open');
+    } catch(e) {
+      alert('Error al enviar respuesta: ' + e.message);
+      if (btn) { btn.disabled = false; btn.textContent = 'Enviar'; }
+    }
+  }
+
+  function submitOnEnter(e, qId) {
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submitAnswer(qId); }
+  }
+
+
+  async function updateStats() {
+    const qs = await DB.getQuestions();
+    document.getElementById('statQ').textContent = qs.length;
+    document.getElementById('statA').textContent = qs.reduce((s, q) => s + (q.answers?.length || 0), 0);
+  }
+
+
+  renderNewQBox();
+  renderList().then(() => updateStats());
+</script>
+</body>
+</html>

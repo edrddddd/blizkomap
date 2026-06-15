@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mi perfil | Blizkomap</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="js/blizko.js"></script>
+<script src="js/supabase-db.js"></script>
+<style id="shared"></style>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="headerMount"></div>
+
+<div class="profile-layout">
+  <aside>
+    <div class="sidebar-card">
+      <div class="avatar-wrap">
+        <div class="avatar-ring" id="sideAvatar" onclick="document.getElementById('avatarInput').click()">
+          <div class="avatar-overlay">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+          </div>
+        </div>
+        <input type="file" id="avatarInput" accept="image/*" onchange="handleAvatarUpload(event)">
+      </div>
+      <div class="profile-name" id="sidebarName"></div>
+      <div class="profile-email" id="sidebarEmail"></div>
+
+      <ul class="sidebar-menu">
+        <li><a href="#" class="active" onclick="showPanel('edit',this)">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          Mi información
+        </a></li>
+        <li><a href="#" onclick="showPanel('reservations',this)">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          Mis reservas
+        </a></li>
+        <li><a href="#" onclick="showPanel('suggestions',this)">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+          Mis sugerencias
+        </a></li>
+        <li><a href="#" onclick="showPanel('password',this)">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          Cambiar contraseña
+        </a></li>
+        <hr class="side-divider">
+        <li><a href="foro.html">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Ir al foro
+        </a></li>
+        <li><button class="danger" onclick="handleLogout()">
+          <svg class="menu-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          Cerrar sesión
+        </button></li>
+      </ul>
+    </div>
+  </aside>
+
+  <main>
+
+    <div class="panel active" id="panel-edit">
+      <div class="panel-title">Mi información</div>
+      <div class="panel-sub">Edita tu nombre visible y foto de perfil</div>
+
+      <div class="card">
+        <div id="editAlert"></div>
+        <div class="avatar-edit-row">
+          <div class="avatar-big" id="editAvatar"></div>
+          <div>
+            <button class="btn btn-ghost btn-sm" onclick="document.getElementById('avatarInput').click()">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+              Cambiar foto
+            </button>
+            <p style="font-size:12px;color:var(--gray-500);margin-top:6px">JPG o PNG, máx. 2 MB</p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="editName">Nombre visible</label>
+            <input type="text" id="editName" placeholder="Tu nombre">
+          </div>
+          <div class="form-group">
+            <label>Correo electrónico</label>
+            <input type="email" id="editEmail" disabled style="opacity:.55;cursor:not-allowed">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Miembro desde</label>
+          <input type="text" id="editSince" disabled style="opacity:.55;cursor:not-allowed">
+        </div>
+
+        <button class="btn btn-primary" onclick="saveInfo()">Guardar cambios</button>
+      </div>
+    </div>
+
+    <div class="panel" id="panel-reservations">
+      <div class="panel-title">Mis reservas</div>
+      <div class="panel-sub">Departamentos y lugares que has reservado</div>
+
+      <div class="new-form-card">
+        <div class="new-form-title">+ Nueva reserva</div>
+        <div id="resAlert"></div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Lugar / Departamento</label>
+            <input type="text" id="resPlace" placeholder="Ej. Departamento calle Hidalgo 23">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Fecha tentativa</label>
+            <input type="date" id="resDate">
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:1rem;margin-bottom:0">
+          <label>Nota adicional (opcional)</label>
+          <input type="text" id="resNote" placeholder="Ej. Visita para ver el cuarto">
+        </div>
+        <button class="btn btn-primary btn-sm" style="margin-top:1rem" onclick="addReservation()">Guardar reserva</button>
+      </div>
+
+      <div class="res-list" id="resList"></div>
+    </div>
+
+    <div class="panel" id="panel-suggestions">
+      <div class="panel-title">Mis sugerencias</div>
+      <div class="panel-sub">Lugares que has propuesto para agregar al mapa</div>
+
+      <div class="new-form-card">
+        <div class="new-form-title">+ Sugerir un lugar</div>
+        <div id="sugAlert"></div>
+        <div class="form-row">
+          <div class="form-group" style="margin-bottom:0">
+            <label>Nombre del lugar</label>
+            <input type="text" id="sugName" placeholder="Ej. Tacos Don Ramón">
+          </div>
+          <div class="form-group" style="margin-bottom:0">
+            <label>Categoría</label>
+            <select id="sugCat">
+              <option value="">Selecciona…</option>
+              <option value="Comida">Comida</option>
+              <option value="Tienda">Tienda</option>
+              <option value="Departamento">Departamento</option>
+              <option value="Otro">Otro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top:1rem;margin-bottom:0">
+          <label>Descripción breve</label>
+          <input type="text" id="sugDesc" placeholder="Ej. Tacos de canasta a $12 cerca del CUI">
+        </div>
+        <button class="btn btn-primary btn-sm" style="margin-top:1rem" onclick="addSuggestion()">Enviar sugerencia</button>
+      </div>
+
+      <div class="sug-list" id="sugList"></div>
+    </div>
+
+    <div class="panel" id="panel-password">
+      <div class="panel-title">Cambiar contraseña</div>
+      <div class="panel-sub">Elige una contraseña segura que no uses en otro sitio</div>
+
+      <div class="card">
+        <div id="passAlert"></div>
+        <div class="form-group">
+          <label>Contraseña actual</label>
+          <div class="pass-wrap">
+            <input type="password" id="passOld" placeholder="••••••••">
+            <button class="eye-btn" type="button" onclick="togglePass('passOld',this)">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+            </button>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nueva contraseña</label>
+            <div class="pass-wrap">
+              <input type="password" id="passNew" placeholder="Mínimo 6 caracteres">
+              <button class="eye-btn" type="button" onclick="togglePass('passNew',this)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Confirmar nueva contraseña</label>
+            <div class="pass-wrap">
+              <input type="password" id="passConf" placeholder="Repite la contraseña">
+              <button class="eye-btn" type="button" onclick="togglePass('passConf',this)">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="changePassword()">Actualizar contraseña</button>
+
+        <hr class="divider">
+        <div class="danger-zone">
+          <h3>Zona de peligro</h3>
+          <p>Eliminar tu cuenta borrará permanentemente tu perfil, reservas y sugerencias. Esta acción no se puede deshacer.</p>
+          <button class="btn btn-danger btn-sm" onclick="deleteAccount()">Eliminar mi cuenta</button>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  document.getElementById('shared').textContent = SHARED_CSS;
+
+  let user = DB.getSession();
+  if (!user) { location.href = 'login.html'; }
+
+  document.getElementById('headerMount').innerHTML = renderHeader('perfil');
+
+  function refreshUser() {
+    user = DB.getSession();
+    if (!user) return;
+    document.getElementById('sidebarName').textContent = user.name;
+    document.getElementById('sidebarEmail').textContent = user.email;
+    renderSideAvatar('sideAvatar');
+    document.getElementById('editName').value = user.name;
+    document.getElementById('editEmail').value = user.email;
+    document.getElementById('editSince').value = new Date(user.createdAt).toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});
+    renderEditAvatar();
+  }
+
+  function avatarHTML(u, size=72) {
+    if (u.avatar) return `<img src="${u.avatar}" alt="${u.name}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover">`;
+    return `<span style="width:${size}px;height:${size}px;background:${u.avatarColor};border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:${Math.round(size*.33)}px;font-weight:700;color:#fff">${initials(u.name)}</span>`;
+  }
+
+  function renderSideAvatar(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.style.background = user.avatarColor;
+    if (user.avatar) {
+      el.innerHTML = `<img src="${user.avatar}" alt="${user.name}" style="width:100%;height:100%;object-fit:cover"><div class="avatar-overlay"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' width='22' height='22'><path d='M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'/><circle cx='12' cy='13' r='4'/></svg></div>`;
+    } else {
+      el.innerHTML = `${initials(user.name)}<div class="avatar-overlay"><svg viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' width='22' height='22'><path d='M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z'/><circle cx='12' cy='13' r='4'/></svg></div>`;
+    }
+  }
+
+  function renderEditAvatar() {
+    const el = document.getElementById('editAvatar');
+    if (!el) return;
+    el.style.background = user.avatarColor;
+    el.innerHTML = user.avatar
+      ? `<img src="${user.avatar}" alt="${user.name}" style="width:100%;height:100%;object-fit:cover">`
+      : initials(user.name);
+  }
+
+  function handleAvatarUpload(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { alert('La imagen debe pesar menos de 2 MB.'); return; }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      DB.updateUser(user.id, { avatar: ev.target.result });
+      refreshUser();
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function showPanel(name, link) {
+    if (link) {
+      document.querySelectorAll('.sidebar-menu a').forEach(a => a.classList.remove('active'));
+      link.classList.add('active');
+    }
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('panel-' + name).classList.add('active');
+    if (name === 'reservations') renderReservations();
+    if (name === 'suggestions') renderSuggestions();
+    return false;
+  }
+
+  function showAlert(id, msg, type='error') {
+    document.getElementById(id).innerHTML = `<div class="alert alert-${type}" style="margin-bottom:1rem">${msg}</div>`;
+    setTimeout(() => { const el=document.getElementById(id); if(el) el.innerHTML=''; }, 3000);
+  }
+
+  function saveInfo() {
+    const name = document.getElementById('editName').value.trim();
+    if (!name) { showAlert('editAlert','Ingresa tu nombre.'); return; }
+    DB.updateUser(user.id, { name });
+    refreshUser();
+    document.getElementById('headerMount').innerHTML = renderHeader('perfil');
+    showAlert('editAlert','¡Cambios guardados!','success');
+  }
+
+  function togglePass(id, btn) {
+    const el = document.getElementById(id);
+    el.type = el.type === 'password' ? 'text' : 'password';
+    btn.querySelector('svg').style.opacity = el.type==='text' ? '0.4' : '1';
+  }
+
+  function changePassword() {
+    const old = document.getElementById('passOld').value;
+    const nw  = document.getElementById('passNew').value;
+    const cf  = document.getElementById('passConf').value;
+    if (!old || !nw || !cf) { showAlert('passAlert','Completa todos los campos.'); return; }
+    if (old !== user.password) { showAlert('passAlert','La contraseña actual es incorrecta.'); return; }
+    if (nw.length < 6) { showAlert('passAlert','La nueva contraseña debe tener al menos 6 caracteres.'); return; }
+    if (nw !== cf) { showAlert('passAlert','Las contraseñas no coinciden.'); return; }
+    DB.updateUser(user.id, { password: nw });
+    ['passOld','passNew','passConf'].forEach(id => document.getElementById(id).value='');
+    showAlert('passAlert','¡Contraseña actualizada!','success');
+  }
+
+  function deleteAccount() {
+    if (!confirm('¿Estás seguro? Esta acción es permanente y no se puede deshacer.')) return;
+    const users = DB.getUsers().filter(u => u.id !== user.id);
+    DB.saveUsers(users);
+    DB.clearSession();
+    location.href = 'index.html';
+  }
+
+  function handleLogout() {
+    DB.logout();
+    location.href = 'index.html';
+  }
+
+  function addReservation() {
+    const place = document.getElementById('resPlace').value.trim();
+    const date  = document.getElementById('resDate').value;
+    const note  = document.getElementById('resNote').value.trim();
+    if (!place || !date) { showAlert('resAlert','Ingresa el lugar y la fecha.'); return; }
+    DB.addReservation(user.id, { place, date, note });
+    user = DB.getSession();
+    document.getElementById('resPlace').value='';
+    document.getElementById('resDate').value='';
+    document.getElementById('resNote').value='';
+    showAlert('resAlert','¡Reserva guardada!','success');
+    renderReservations();
+  }
+
+  function cancelReservation(id) {
+    if (!confirm('¿Cancelar esta reserva?')) return;
+    DB.cancelReservation(user.id, id);
+    user = DB.getSession();
+    renderReservations();
+  }
+
+  function statusBadge(status) {
+    const map = {
+      'Pendiente': 'badge-orange',
+      'Cancelada': 'badge-red',
+      'Confirmada': 'badge-green',
+    };
+    return `<span class="badge ${map[status]||'badge-gray'}">${status}</span>`;
+  }
+
+  function renderReservations() {
+    user = DB.getSession();
+    const list = document.getElementById('resList');
+    const items = user.reservations || [];
+    if (!items.length) {
+      list.innerHTML = `<div class="empty-state"><div class="emoji">📅</div><p>Sin reservas todavía</p><span>Agrega tu primera reserva arriba</span></div>`;
+      return;
+    }
+    list.innerHTML = items.map(r => `
+      <div class="res-item">
+        <div class="res-info">
+          <div class="res-place">${r.place}</div>
+          <div class="res-meta">${r.date ? new Date(r.date+'T12:00').toLocaleDateString('es-MX',{weekday:'long',year:'numeric',month:'long',day:'numeric'}) : ''} ${r.note ? '· '+r.note : ''}</div>
+        </div>
+        <div class="res-actions">
+          ${statusBadge(r.status)}
+          ${r.status !== 'Cancelada' ? `<button class="btn btn-danger btn-sm" onclick="cancelReservation('${r.id}')">Cancelar</button>` : ''}
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function addSuggestion() {
+    const name = document.getElementById('sugName').value.trim();
+    const cat  = document.getElementById('sugCat').value;
+    const desc = document.getElementById('sugDesc').value.trim();
+    if (!name || !cat) { showAlert('sugAlert','Ingresa el nombre y la categoría.'); return; }
+    DB.addSuggestion(user.id, { name, cat, desc });
+    user = DB.getSession();
+    document.getElementById('sugName').value='';
+    document.getElementById('sugCat').value='';
+    document.getElementById('sugDesc').value='';
+    showAlert('sugAlert','¡Sugerencia enviada! La revisaremos pronto.','success');
+    renderSuggestions();
+  }
+
+  function catBadge(cat) {
+    const map = { Comida:'badge-orange', Tienda:'badge-green', Departamento:'badge-blue' };
+    return `<span class="badge ${map[cat]||'badge-gray'}">${cat}</span>`;
+  }
+
+  function renderSuggestions() {
+    user = DB.getSession();
+    const list = document.getElementById('sugList');
+    const items = user.suggestions || [];
+    if (!items.length) {
+      list.innerHTML = `<div class="empty-state"><div class="emoji">⭐</div><p>Sin sugerencias todavía</p><span>¿Conoces un lugar que debería estar aquí? Sugiérelo arriba</span></div>`;
+      return;
+    }
+    list.innerHTML = items.map(s => `
+      <div class="sug-item">
+        <div class="sug-top">
+          <span class="sug-name">${s.name}</span>
+          <div style="display:flex;gap:.5rem;align-items:center">
+            ${catBadge(s.cat)}
+            <span class="badge badge-gray">${s.status}</span>
+          </div>
+        </div>
+        ${s.desc ? `<div class="sug-desc">${s.desc}</div>` : ''}
+        <div style="font-size:12px;color:var(--gray-500);margin-top:8px">${timeAgo(s.date)}</div>
+      </div>
+    `).join('');
+  }
+
+  refreshUser();
+</script>
+</body>
+</html>

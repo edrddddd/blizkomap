@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crear cuenta | Blizkomap</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<script src="js/blizko.js"></script>
+<script src="js/supabase-db.js"></script>
+<link rel="stylesheet" href="css/style.css">
+<style id="shared"></style>
+</head>
+<body>
+<div id="headerMount"></div>
+
+<div class="login-wrap">
+  <div class="login-box">
+    <div class="login-header">
+      <a href="index.html" class="login-logo">
+        <div class="logo-mark">B</div>
+        <span class="logo-text">Blizkomap</span>
+      </a>
+      <h1>Crea tu cuenta</h1>
+      <p>Gratis para toda la comunidad CUI</p>
+    </div>
+
+    <div class="card">
+      <div id="alertBox"></div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="name">Nombre completo</label>
+          <input type="text" id="name" placeholder="Tu nombre" autocomplete="name">
+        </div>
+        <div class="form-group">
+          <label for="email">Correo electrónico</label>
+          <input type="email" id="email" placeholder="correo@ejemplo.com" autocomplete="email">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Contraseña</label>
+        <div class="pass-wrap">
+          <input type="password" id="password" placeholder="Mínimo 6 caracteres"
+            autocomplete="new-password" oninput="checkStrength(this.value)">
+          <button class="eye-btn" type="button" onclick="togglePass('password',this)" aria-label="Mostrar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+        <div class="strength-bar"><div class="strength-fill" id="strengthFill"></div></div>
+        <div class="strength-label" id="strengthLabel"></div>
+      </div>
+
+      <div class="form-group">
+        <label for="confirm">Confirmar contraseña</label>
+        <div class="pass-wrap">
+          <input type="password" id="confirm" placeholder="Repite tu contraseña" autocomplete="new-password">
+          <button class="eye-btn" type="button" onclick="togglePass('confirm',this)" aria-label="Mostrar">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%;justify-content:center;margin-top:.5rem"
+        onclick="handleRegister()">Crear cuenta</button>
+
+      <p class="terms">Al registrarte aceptas las condiciones de uso de Blizkomap, un proyecto estudiantil sin fines de lucro.</p>
+    </div>
+
+    <div class="login-footer">
+      ¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('shared').textContent = SHARED_CSS;
+  document.getElementById('headerMount').innerHTML = renderHeader('');
+
+  if (DB.getSession()) location.href = 'perfil.html';
+
+  function showAlert(msg, type='error') {
+    document.getElementById('alertBox').innerHTML =
+      `<div class="alert alert-${type}">${msg}</div>`;
+  }
+
+  function togglePass(id, btn) {
+    const el = document.getElementById(id);
+    el.type = el.type === 'password' ? 'text' : 'password';
+    btn.querySelector('svg').style.opacity = el.type === 'text' ? '0.4' : '1';
+  }
+
+  function checkStrength(val) {
+    const fill = document.getElementById('strengthFill');
+    const lbl  = document.getElementById('strengthLabel');
+    if (!val) { fill.style.width='0'; lbl.textContent=''; return; }
+    let score = 0;
+    if (val.length >= 6) score++;
+    if (val.length >= 10) score++;
+    if (/[A-Z]/.test(val)) score++;
+    if (/[0-9]/.test(val)) score++;
+    if (/[^a-zA-Z0-9]/.test(val)) score++;
+    const map = [
+      {w:'20%',c:'#E24B4A',t:'Muy débil'},
+      {w:'40%',c:'#EF9F27',t:'Débil'},
+      {w:'60%',c:'#EF9F27',t:'Regular'},
+      {w:'80%',c:'#63991B',t:'Buena'},
+      {w:'100%',c:'#1D9E75',t:'Excelente'},
+    ];
+    const s = map[Math.min(score-1, 4)] || map[0];
+    fill.style.width = s.w;
+    fill.style.background = s.c;
+    lbl.textContent = s.t;
+    lbl.style.color = s.c;
+  }
+
+  async function handleRegister() {
+    const name  = document.getElementById('name').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const pass  = document.getElementById('password').value;
+    const conf  = document.getElementById('confirm').value;
+    if (!name || !email || !pass || !conf) { showAlert('Completa todos los campos.'); return; }
+    if (pass.length < 6) { showAlert('La contraseña debe tener al menos 6 caracteres.'); return; }
+    if (pass !== conf) { showAlert('Las contraseñas no coinciden.'); return; }
+
+  
+    const btn = document.querySelector('button[onclick="handleRegister()"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Creando cuenta…'; }
+
+    try {
+      const res = await DB.createUser({ name, email, password: pass });
+      if (!res.ok) { showAlert(res.msg); return; }
+      DB.setSession(res.user);
+      showAlert('¡Cuenta creada! Redirigiendo…', 'success');
+      setTimeout(() => location.href = 'perfil.html', 900);
+    } catch (e) {
+      showAlert('Error de conexión. Intenta de nuevo.');
+    } finally {
+      if (btn) { btn.disabled = false; btn.textContent = 'Crear cuenta'; }
+    }
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') handleRegister(); });
+</script>
+</body>
+</html>
